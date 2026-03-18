@@ -2,4 +2,5 @@ fastapi
 uvicorn
 google-generativeai
 requests
-pydantic
+python-multipart
+PyPDF2
