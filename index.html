@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMesh AI | Study Assistant</title>
+    <style>
+        body { 
+            font-family: 'Inter', 'Segoe UI', sans-serif; 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container { 
+            width: 100%; 
+            max-width: 650px; 
+            background-color: #161b22; 
+            border: 1px solid #30363d;
+            border-radius: 12px; 
+            padding: 25px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.8); 
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            background: linear-gradient(90deg, #58a6ff, #bc8cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+        }
+        .tagline {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #8b949e;
+            margin-bottom: 20px;
+        }
+        .chat-box { 
+            height: 400px; 
+            overflow-y: auto; 
+            margin-bottom: 20px; 
+            padding: 15px; 
+            background-color: #0d1117; 
+            border: 1px solid #30363d;
+            border-radius: 8px; 
+        }
+        .message { margin-bottom: 15px; padding: 12px 16px; border-radius: 8px; line-height: 1.5; font-size: 0.95rem; }
+        .user-msg { 
+            background-color: #238636; 
+            color: #ffffff;
+            text-align: right; 
+            margin-left: auto; 
+            width: fit-content; 
+            max-width: 80%; 
+        }
+        .ai-msg { 
+            background-color: #21262d; 
+            border: 1px solid #30363d;
+            width: fit-content; 
+            max-width: 80%; 
+        }
+        .input-area { display: flex; gap: 10px; }
+        input[type="text"] { 
+            flex: 1; 
+            padding: 12px; 
+            border: 1px solid #30363d; 
+            border-radius: 6px; 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            outline: none; 
+            transition: 0.2s;
+        }
+        input[type="text"]:focus { border-color: #58a6ff; }
+        button { 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 6px; 
+            background-color: #58a6ff; 
+            color: #0d1117; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: 0.2s; 
+        }
+        button:hover { background-color: #79c0ff; }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <h2>MindMesh AI</h2>
+        <div class="tagline">Multi-Agent Study Assistant</div>
+        <div class="chat-box" id="chat-box">
+            <div class="message ai-msg"><strong>MindMesh:</strong> Initialization complete. I am connected to the Groq and Gemini learning nodes. What are we studying today?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ask a question or paste text..." onkeypress="handleEnter(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ CHANGE THIS URL to your actual Render URL once you deploy the backend
+        const BACKEND_URL = "https://your-render-app-name.onrender.com/ask"; 
+
+        async function sendMessage() {
+            const inputField = document.getElementById("user-input");
+            const chatBox = document.getElementById("chat-box");
+            const message = inputField.value.trim();
+
+            if (!message) return;
+
+            chatBox.innerHTML += `<div class="message user-msg">${message}</div>`;
+            inputField.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const thinkingId = "thinking-" + Date.now();
+            chatBox.innerHTML += `<div class="message ai-msg" id="${thinkingId}"><em>Routing through MindMesh...</em></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        question: message,
+                        is_complex: message.length > 100 
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById(thinkingId).innerHTML = data.answer;
+            } catch (error) {
+                document.getElementById(thinkingId).innerText = "Connection lost. Please ensure the MindMesh backend is running.";
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>
